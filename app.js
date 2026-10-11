@@ -50,6 +50,8 @@
   $('notes').value=state.notes;$('notes').addEventListener('input',()=>{state.notes=$('notes').value;persist();});
   $('guide-button').addEventListener('click',()=>{$('guide').hidden=!$('guide').hidden;$('guide-button').setAttribute('aria-expanded',String(!$('guide').hidden));});
   $('export').addEventListener('click',()=>{const text=`# Relay CTF investigation\n\nCaptured: ${state.solved.length}/${CHALLENGES.length}\n\n${CHALLENGES.map(c=>`- [${state.solved.includes(c.id)?'x':' '}] ${c.title} (${c.level}, ${c.category})`).join('\n')}\n\n## Evidence\n\n${state.notes}\n`;const url=URL.createObjectURL(new Blob([text],{type:'text/markdown'}));const a=document.createElement('a');a.href=url;a.download='relay-investigation.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-  $('reset').addEventListener('click',()=>{if(confirm('Reset your captured flags, hints, and notebook? Export your notes first if you want a copy.')){try{localStorage.removeItem(key);}catch{}location.reload();}});
+  let resetArmed=false;
+  $('reset').addEventListener('click',()=>{if(!resetArmed){resetArmed=true;$('reset').textContent='Confirm reset: clear flags, hints and notes';$('reset-cancel').hidden=false;toast('Export your notebook first if you want to keep it. Confirm reset or cancel below.');return;}try{localStorage.removeItem(key);}catch{}state.solved=[];state.hints={};state.notes='';persist();location.reload();});
+  $('reset-cancel').addEventListener('click',()=>{resetArmed=false;$('reset').textContent='Reset all game progress';$('reset-cancel').hidden=true;});
   score();updatePrompt();updateTabs();response();
 })();
